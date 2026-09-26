@@ -1,5 +1,5 @@
 ﻿# Fancy Pants Adventures Recompilation 
-
+# HEAVILY VIBECODED
 This is a community research project for running a native Windows build based on ReXGlue. The repository contains project scaffolding, tools, and documentation. It does not include the commercial game, its assets, XEX files, or translated game code.
 
 ## Requirements
