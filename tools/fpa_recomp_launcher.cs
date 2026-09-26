@@ -22,6 +22,8 @@ internal sealed class LauncherForm : Form
     private readonly TextBox executable = new TextBox();
     private readonly TextBox gameFolder = new TextBox();
     private readonly ComboBox resolution = new ComboBox();
+    private readonly ComboBox anisotropic = new ComboBox();
+    private readonly ComboBox renderTargetPath = new ComboBox();
     private readonly ComboBox controller = new ComboBox();
     private readonly CheckBox fullscreen = new CheckBox();
     private readonly CheckBox asyncShaders = new CheckBox();
@@ -34,7 +36,7 @@ internal sealed class LauncherForm : Form
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
-        ClientSize = new Size(560, 390);
+        ClientSize = new Size(560, 460);
         Font = new Font("Segoe UI", 9F);
 
         AddLabel("Game executable", 16, 18, 150);
@@ -48,42 +50,56 @@ internal sealed class LauncherForm : Form
         AddButton("Browse...", 446, 102, 96, 28, BrowseGameFolder);
         AddLabel("The folder may be beside the executable or elsewhere.", 16, 132, 510);
 
-        AddLabel("Resolution", 16, 171, 100);
-        resolution.SetBounds(16, 195, 150, 26);
+        AddLabel("Resolution", 16, 165, 120);
+        resolution.SetBounds(16, 189, 155, 26);
         resolution.DropDownStyle = ComboBoxStyle.DropDownList;
         resolution.Items.AddRange(new object[] { "720p", "1080p", "1440p", "4k", "1280x720" });
         resolution.SelectedItem = "720p";
         Controls.Add(resolution);
 
         fullscreen.Text = "Fullscreen";
-        fullscreen.SetBounds(192, 196, 140, 24);
+        fullscreen.SetBounds(196, 191, 140, 24);
         Controls.Add(fullscreen);
 
-        AddLabel("Controller", 16, 239, 100);
-        controller.SetBounds(16, 263, 150, 26);
+        AddLabel("Anisotropic filtering", 16, 226, 170);
+        anisotropic.SetBounds(16, 250, 155, 26);
+        anisotropic.DropDownStyle = ComboBoxStyle.DropDownList;
+        anisotropic.Items.AddRange(new object[] { "Game default", "Off", "1x", "2x", "4x", "8x", "16x" });
+        anisotropic.SelectedIndex = 4;
+        Controls.Add(anisotropic);
+
+        AddLabel("D3D12 render-target path", 196, 226, 220);
+        renderTargetPath.SetBounds(196, 250, 155, 26);
+        renderTargetPath.DropDownStyle = ComboBoxStyle.DropDownList;
+        renderTargetPath.Items.AddRange(new object[] { "Runtime default", "RTV", "ROV" });
+        renderTargetPath.SelectedIndex = 0;
+        Controls.Add(renderTargetPath);
+
+        AddLabel("Controller", 16, 294, 100);
+        controller.SetBounds(16, 318, 155, 26);
         controller.DropDownStyle = ComboBoxStyle.DropDownList;
         controller.Items.AddRange(new object[] { "SDL (recommended)", "XInput" });
         controller.SelectedIndex = 0;
         Controls.Add(controller);
 
         asyncShaders.Text = "Async shader compilation";
-        asyncShaders.SetBounds(192, 264, 220, 24);
+        asyncShaders.SetBounds(196, 319, 220, 24);
         asyncShaders.Checked = true;
         Controls.Add(asyncShaders);
 
         waitForPipelines.Text = "Wait for GPU pipelines";
-        waitForPipelines.SetBounds(16, 303, 200, 24);
+        waitForPipelines.SetBounds(16, 360, 210, 24);
         Controls.Add(waitForPipelines);
 
-        AddLabel("Pipeline worker threads", 250, 301, 160);
-        pipelineThreads.SetBounds(414, 301, 75, 25);
+        AddLabel("Pipeline worker threads", 250, 358, 160);
+        pipelineThreads.SetBounds(414, 358, 75, 25);
         pipelineThreads.Minimum = 0;
         pipelineThreads.Maximum = 64;
         pipelineThreads.Value = 2;
         Controls.Add(pipelineThreads);
 
-        AddButton("Save settings and launch", 332, 344, 210, 32, LaunchGame);
-        AddButton("Save settings", 16, 344, 130, 32, SaveSettingsOnly);
+        AddButton("Save settings and launch", 332, 411, 210, 32, LaunchGame);
+        AddButton("Save settings", 16, 411, 130, 32, SaveSettingsOnly);
 
         string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
         string nearbyExecutable = Path.Combine(appDirectory, "fpa_recomp.exe");
@@ -156,6 +172,17 @@ internal sealed class LauncherForm : Form
         string value;
         if (values.TryGetValue("resolution", out value) && resolution.Items.Contains(value)) resolution.SelectedItem = value;
         if (values.TryGetValue("fullscreen", out value)) fullscreen.Checked = String.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
+        if (values.TryGetValue("anisotropic_override", out value))
+        {
+            int parsed;
+            if (Int32.TryParse(value, out parsed)) anisotropic.SelectedIndex = Math.Max(0, Math.Min(6, parsed + 1));
+        }
+        if (values.TryGetValue("render_target_path_d3d12", out value))
+        {
+            if (String.Equals(value, "rtv", StringComparison.OrdinalIgnoreCase)) renderTargetPath.SelectedIndex = 1;
+            else if (String.Equals(value, "rov", StringComparison.OrdinalIgnoreCase)) renderTargetPath.SelectedIndex = 2;
+            else renderTargetPath.SelectedIndex = 0;
+        }
         if (values.TryGetValue("input_backend", out value)) controller.SelectedIndex = String.Equals(value, "xinput", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
         if (values.TryGetValue("async_shader_compilation", out value)) asyncShaders.Checked = String.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
         if (values.TryGetValue("d3d12_pipeline_creation_wait", out value)) waitForPipelines.Checked = String.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
@@ -187,6 +214,7 @@ internal sealed class LauncherForm : Form
         }
 
         string backend = controller.SelectedIndex == 1 ? "xinput" : "sdl";
+        string renderPath = renderTargetPath.SelectedIndex == 1 ? "rtv" : renderTargetPath.SelectedIndex == 2 ? "rov" : "";
         string[] lines = new string[]
         {
             "resolution = \"" + EscapeToml(resolution.SelectedItem.ToString()) + "\"",
@@ -195,7 +223,8 @@ internal sealed class LauncherForm : Form
             "async_shader_compilation = " + asyncShaders.Checked.ToString().ToLowerInvariant(),
             "d3d12_pipeline_creation_wait = " + waitForPipelines.Checked.ToString().ToLowerInvariant(),
             "d3d12_pipeline_creation_threads = " + pipelineThreads.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            "anisotropic_override = 0",
+            "anisotropic_override = " + (anisotropic.SelectedIndex - 1).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            "render_target_path_d3d12 = \"" + renderPath + "\"",
             "clear_memory_page_state = false",
             "mnk_mode = true",
             "keybind_lstick_up = \"Up\"",
