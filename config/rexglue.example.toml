@@ -1,0 +1,32 @@
+# ReXGlue SDK 0.10+ manifest structure. Copy to the project root as
+# fpa_recomp_manifest.toml and
+# update the entrypoint path for your local XEX. This differs from target.toml.
+[project]
+name = "fpa_recomp"
+sdk_version = "0.10.0"
+
+[entrypoint]
+file_path = "local-game/defaultdecrypted.xex"
+out_directory_path = "generated/defaultdecrypted"
+includes = ["config/fpa_overrides.toml"]
+
+# Start with conservative defaults. Enable optimizations only after the
+# initial translation has been checked against observed game behavior.
+skip_lr = false
+skip_msr = false
+ctr_as_local = false
+xer_as_local = false
+cr_as_local = false
+reserved_as_local = false
+non_argument_as_local = false
+non_volatile_as_local = false
+generate_exception_handlers = false
+
+[entrypoint.analysis]
+max_jump_extension = 65536
+data_region_threshold = 16
+large_function_threshold = 1048576
+exception_handler_funcs = []
+
+# Add function boundaries, switch tables, invalid instruction ranges, or
+# runtime mappings here only when supported by analysis evidence.

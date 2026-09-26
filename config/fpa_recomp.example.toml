@@ -1,0 +1,18 @@
+# Copy beside fpa_recomp.exe as fpa_recomp.toml and adjust for your setup.
+# This sample contains no game files, generated game code, or entitlement overrides.
+resolution = "720p"
+fullscreen = false
+anisotropic_override = 0
+clear_memory_page_state = false
+async_shader_compilation = true
+d3d12_pipeline_creation_threads = 2
+d3d12_pipeline_creation_wait = false
+input_backend = "sdl"
+mnk_mode = true
+keybind_lstick_up = "Up"
+keybind_lstick_down = "Down"
+keybind_lstick_left = "Left"
+keybind_lstick_right = "Right"
+keybind_a = "S"
+keybind_x = "A"
+keybind_start = "Return"

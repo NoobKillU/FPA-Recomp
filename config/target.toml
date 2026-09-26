@@ -1,0 +1,30 @@
+# Evidence-backed target inventory. This is project metadata, not a
+# XenonRecomp or other recompiler configuration file.
+
+[title]
+name = "The Fancy Pants Adventures"
+platform = "Xbox 360 XBLA"
+title_id = "58410A9F"
+project_version = "1.0.205.0"
+
+[executable]
+module = "default.xex"
+user_supplied_decrypted_variant = "defaultdecrypted.xex"
+format = "XEX2 with Xbox PE32 inner image"
+machine = "PowerPC big-endian"
+entry_point = "0x820A1D70"
+image_base = "0x82000000"
+entry_rva = "0x000A1D70"
+image_size = "0x005D1800"
+section_count = 8
+
+[recompilation]
+host = "Windows x64"
+status = "investigation"
+translator = "undecided"
+runtime = "undecided"
+note = "Metadata only; do not treat this file as a translator input manifest."
+
+[input_policy]
+store_game_binaries_in_repository = false
+store_generated_game_code_in_repository = false
