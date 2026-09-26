@@ -2,12 +2,13 @@
 # This sample contains no game files, generated game code, or entitlement overrides.
 resolution = "720p"
 fullscreen = false
-anisotropic_override = 0
-clear_memory_page_state = false
-async_shader_compilation = true
-d3d12_pipeline_creation_threads = 2
-d3d12_pipeline_creation_wait = false
 input_backend = "sdl"
+async_shader_compilation = true
+d3d12_pipeline_creation_wait = true
+d3d12_pipeline_creation_threads = 2
+anisotropic_override = 3
+render_target_path_d3d12 = "rtv"
+clear_memory_page_state = false
 mnk_mode = true
 keybind_lstick_up = "Up"
 keybind_lstick_down = "Down"
@@ -16,4 +17,3 @@ keybind_lstick_right = "Right"
 keybind_a = "S"
 keybind_x = "A"
 keybind_start = "Return"
-render_target_path_d3d12 = "rtv"
